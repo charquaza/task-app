@@ -9,7 +9,8 @@ class App extends Component {
     this.state = {
       task: {
         text: '', 
-        id: uniqid()
+        id: uniqid(),
+        editing: false
       },
       tasks: [],
     };
@@ -20,6 +21,7 @@ class App extends Component {
       task: {
         text: e.target.value,
         id: this.state.task.id,
+        editing: false
       },
     });
   };
@@ -30,10 +32,52 @@ class App extends Component {
       tasks: this.state.tasks.concat(this.state.task),
       task: {
         text: '', 
-        id: uniqid()
+        id: uniqid(),
+        editing: false
       },
     });
   };
+
+  deleteTask = (e) => {
+    var index = Number(e.target.getAttribute("data-index"));
+
+    this.setState((state) => {
+      var firstHalf = state.tasks.slice(0, index);
+      var secondHalf = state.tasks.slice(index + 1);
+
+      return {tasks: firstHalf.concat(secondHalf)};
+    });
+  };
+
+  editTask = (e) => {
+    var btn = e.target;
+    var currIndex = Number(btn.getAttribute("data-index"));
+    var currTask = this.state.tasks[currIndex];
+
+    if (currTask.editing) {
+      let newInputElem = document.querySelector(`input[data-index="${currIndex}"]`);
+      let newTaskText = newInputElem.value;
+
+      this.setState((state) => {
+        var newTasks = state.tasks.slice();
+        newTasks[currIndex].text = newTaskText;
+        newTasks[currIndex].editing = false;
+  
+        return {tasks: newTasks};
+      });
+
+      btn.textContent = "Edit";
+    } else {
+      this.setState((state) => {
+        var newTasks = state.tasks.slice();
+        newTasks[currIndex].editing = true;
+  
+        return {tasks: newTasks};
+      });
+  
+      btn.textContent = "Resubmit";
+    }
+  }
 
   render() {
     const { task, tasks } = this.state;
@@ -50,7 +94,7 @@ class App extends Component {
           />
           <button type="submit">Add Task</button>
         </form>
-        <Overview tasks={tasks} />
+        <Overview tasks={tasks} deleteTask={this.deleteTask} editTask={this.editTask} />
       </div>
     );
   }
